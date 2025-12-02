@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض العائلة - Family Feud</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .start-screen h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .start-screen p {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            margin-bottom: 40px;
+            color: #ddd;
+        }
+        
+        .start-btn {
+            padding: 20px 50px;
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 0 50px rgba(168, 85, 247, 0.9);
+        }
+        
+        .game-container {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .teams-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .team {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #a855f7;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .team:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+        }
+        
+        .team input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #a855f7;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-family: 'Cairo', sans-serif;
+            text-align: center;
+        }
+        
+        .team input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .score {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #a855f7;
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
+        }
+        
+        .strikes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .strike {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid #666;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 900;
+            color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .strike.active {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+            animation: strikeAnimation 0.5s ease;
+            box-shadow: 0 0 20px #ef4444;
+        }
+        
+        .question-board {
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px solid #a855f7;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 40px rgba(168, 85, 247, 0.2);
+        }
+        
+        .question {
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2));
+            border-radius: 15px;
+        }
+        
+        .answers-grid {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        
+        .answer-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #666;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .answer-card:hover {
+            border-color: #a855f7;
+            transform: translateX(-5px);
+        }
+        
+        .answer-card.revealed {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border-color: #a855f7;
+            animation: revealAnswer 0.5s ease;
+        }
+        
+        .answer-number {
+            font-size: 1.5rem;
+            font-weight: 900;
+            width: 40px;
+            height: 40px;
+            background: #a855f7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .answer-text {
+            flex: 1;
+            margin: 0 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .answer-points {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fbbf24;
+        }
+        
+        .answer-card:not(.revealed) .answer-text,
+        .answer-card:not(.revealed) .answer-points {
+            visibility: hidden;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: white;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid #a855f7;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 40px rgba(168, 85, 247, 0.8);
+            }
+        }
+        
+        @keyframes revealAnswer {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes strikeAnimation {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #a855f7;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+            max-width: 90%;
+        }
+        
+        .modal h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @media (max-width: 768px) {
+            .teams-section {
+                flex-direction: column;
+            }
+            
+            .answers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="start-screen" id="startScreen">
+        <h1>عرض العائلة 🎯</h1>
+        <p>اضغط وخلنا نبدأ الحرب العائلية 👀🔥</p>
+        <button class="start-btn" onclick="startGame()">يلا نبدأ! 🚀</button>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <div class="header">
+            <h1>⚡ عرض العائلة ⚡</h1>
+        </div>
+
+        <div class="teams-section">
+            <div class="team">
+                <h2>الفريق الأول 🔥</h2>
+                <input type="text" id="team1Name" placeholder="اسم الفريق" value="الأسود">
+                <div class="score" id="team1Score">0</div>
+            </div>
+            
+            <div class="team">
+                <h2>الفريق الثاني 💜</h2>
+                <input type="text" id="team2Name" placeholder="اسم الفريق" value="البنفسج">
+                <div class="score" id="team2Score">0</div>
+            </div>
+        </div>
+
+        <div class="strikes">
+            <div class="strike" id="strike1">✖</div>
+            <div class="strike" id="strike2">✖</div>
+            <div class="strike" id="strike3">✖</div>
+        </div>
+
+        <div class="question-board">
+            <div class="question" id="question">اضغط على "السؤال التالي" للبدء 🎮</div>
+            <div class="answers-grid" id="answersGrid"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="newQuestion()" title="السؤال التالي 🎯">السؤال التالي ⏭️</button>
+            <button class="btn btn-secondary" onclick="revealAll()" title="كشف كل شي بس خسارة 😏">كشف الإجابات 👀</button>
+            <button class="btn btn-primary" onclick="addPointsTeam1()" title="الفريق الأول فاز 🏆">نقاط للفريق 1 ⚡</button>
+            <button class="btn btn-primary" onclick="addPointsTeam2()" title="الفريق الثاني فاز 🎉">نقاط للفريق 2 💎</button>
+            <button class="btn btn-danger" onclick="addStrike()" title="غلط يا حبيبي ❌">خطأ ✖️</button>
+            <button class="btn btn-secondary" onclick="resetStrikes()" title="صفر الأخطاء من جديد 🔄">مسح الأخطاء 🔄</button>
+        </div>
+    </div>
+
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2>🎉 مبروك! 🎉</h2>
+            <p style="font-size: 1.5rem; margin: 20px 0;">الجواب صحيح! 🔥</p>
+            <button class="btn btn-primary" onclick="closeModal()">يلا كمل 💪</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "مكان يقضي فيه الطلاب وقت البريك",
+                answers: [
+                    { text: "مقهى/كفتريا", points: 43 },
+                    { text: "القاعة", points: 17 },
+                    { text: "المكتبة", points: 10 },
+                    { text: "السيارة", points: 9 },
+                    { text: "البهو", points: 7 },
+                    { text: "الأسياب", points: 6 },
+                    { text: "المصلى", points: 5 },
+                    { text: "البيت", points: 3 }
+                ]
+            },
+            {
+                q: "شيء ما تستغني عنه بالسفر",
+                answers: [
+                    { text: "جوال", points: 28 },
+                    { text: "شاحن متنقل", points: 19 },
+                    { text: "جواز", points: 17 },
+                    { text: "رفقاء سفر", points: 12 },
+                    { text: "شنطة", points: 10 },
+                    { text: "فلوس", points: 7 },
+                    { text: "فندق", points: 4 },
+                    { text: "سيارة", points: 3 }
+                ]
+            },
+            {
+                q: "سبب يخلي الطالب يتأخر عن المحاضرة",
+                answers: [
+                    { text: "زحمة", points: 51 },
+                    { text: "نوم", points: 17 },
+                    { text: "اهمال", points: 8 },
+                    { text: "المواقف", points: 7 },
+                    { text: "المحاضرة مملة", points: 6 },
+                    { text: "حادث", points: 5 },
+                    { text: "اخوياه", points: 4 },
+                    { text: "وظيفة", points: 3 }
+                ]
+            },
+            {
+                q: "أفضل طبق سعودي",
+                answers: [
+                    { text: "كبسه", points: 41 },
+                    { text: "مرقوق/مطازيز", points: 24 },
+                    { text: "جريش", points: 21 },
+                    { text: "قرصان", points: 7 },
+                    { text: "سليق", points: 6 },
+                    { text: "ميقا عالتنور", points: 1 }
+                ]
+            },
+            {
+                q: "أفضل وقت يذاكر فيه الطالب الجامعي",
+                answers: [
+                    { text: "آخر الليل/بعد العشاء", points: 35 },
+                    { text: "الفجرية/الصباح", points: 26 },
+                    { text: "قبل الاختبار مباشرةً", points: 16 },
+                    { text: "المغرب", points: 9 },
+                    { text: "الويكند", points: 7 },
+                    { text: "الظهرية", points: 6 },
+                    { text: "بالمحاضرة", points: 1 }
+                ]
+            },
+            {
+                q: "حيوان غريب تقدر تربيه بالبيت",
+                answers: [
+                    { text: "ثعبان", points: 27 },
+                    { text: "بطة", points: 17 },
+                    { text: "حرباء/سحلية", points: 13 },
+                    { text: "صقر", points: 11 },
+                    { text: "راكون", points: 7 },
+                    { text: "قرد", points: 7 },
+                    { text: "سنجاب", points: 4 },
+                    { text: "ماعز", points: 1 }
+                ]
+            },
+            {
+                q: "شيء يبحث عنه الطالب اول ما يدخل الجامعة بشكل يومي",
+                answers: [
+                    { text: "القاعة", points: 48 },
+                    { text: "اصدقاءه", points: 17 },
+                    { text: "موقف", points: 15 },
+                    { text: "موية", points: 11 },
+                    { text: "قهوة", points: 9 }
+                ]
+            },
+            {
+                q: "أكثر مشروب تشربه في وقت الشتاء",
+                answers: [
+                    { text: "شاهي/كرك", points: 53 },
+                    { text: "قهوة", points: 27 },
+                    { text: "هوت شوكلت", points: 13 },
+                    { text: "سحلب", points: 7 }
+                ]
+            },
+            {
+                q: "سبب يخلي الطالب يحمل المادة أو ينحرم منها",
+                answers: [
+                    { text: "اهمال", points: 31 },
+                    { text: "غياب", points: 27 },
+                    { text: "الدكتور", points: 26 },
+                    { text: "النوم", points: 11 },
+                    { text: "صعوبة المادة", points: 4 },
+                    { text: "المنسق", points: 1 }
+                ]
+            },
+            {
+                q: "أكثر هواية تقضي فيها وقتك خارج الجامعة",
+                answers: [
+                    { text: "كورة/بادل", points: 36 },
+                    { text: "العاب الكترونية/قيمنق", points: 26 },
+                    { text: "نادي", points: 17 },
+                    { text: "المشي", points: 11 },
+                    { text: "الرسم", points: 9 },
+                    { text: "الرماية", points: 1 }
+                ]
+            }
+        ];
+
+        let currentQuestion = null;
+        let currentQuestionIndex = 0;
+        let revealedAnswers = [];
+        let strikes = 0;
+        let team1Score = 0;
+        let team2Score = 0;
+        let currentRoundPoints = 0;
+
+        function playCorrectSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function playWrongSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 200;
+            oscillator.type = 'sawtooth';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+        }
+
+        function newQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                currentQuestionIndex = 0;
+            }
+            
+            currentQuestion = questions[currentQuestionIndex];
+            currentQuestionIndex++;
+            
+            revealedAnswers = [];
+            currentRoundPoints = 0;
+            resetStrikes();
+            
+            document.getElementById('question').textContent = currentQuestion.q;
+            
+            const answersGrid = document.getElementById('answersGrid');
+            answersGrid.innerHTML = '';
+            
+            currentQuestion.answers.forEach((answer, index) => {
+                const card = document.createElement('div');
+                card.className = 'answer-card';
+                card.onclick = () => revealAnswer(index);
+                
+                card.innerHTML = `
+                    <div class="answer-number">${index + 1}</div>
+                    <div class="answer-text">${answer.text}</div>
+                    <div class="answer-points">${answer.points}</div>
+                `;
+                
+                answersGrid.appendChild(card);
+            });
+        }
+
+        function revealAnswer(index) {
+            if (revealedAnswers.includes(index) || !currentQuestion) return;
+            
+            revealedAnswers.push(index);
+            const cards = document.querySelectorAll('.answer-card');
+            cards[index].classList.add('revealed');
+            
+            currentRoundPoints += currentQuestion.answers[index].points;
+            playCorrectSound();
+        }
+
+        function revealAll() {
+            if (!currentQuestion) return;
+            
+            const cards = document.querySelectorAll('.answer-card');
+            currentQuestion.answers.forEach((answer, index) => {
+                if (!revealedAnswers.includes(index)) {
+                    revealedAnswers.push(index);
+                    cards[index].classList.add('revealed');
+                    currentRoundPoints += answer.points;
+                }
+            });
+        }
+
+        function addPointsTeam1() {
+            team1Score += currentRoundPoints;
+            document.getElementById('team1Score').textContent = team1Score;
+            currentRoundPoints = 0;
+            showWinModal();
+        }
+
+        function addPointsTeam2() {
+            team2Score += currentRoundPoints;
+            document.getElementById('team2Score').textContent = team2Score;
+            currentRoundPoints = 0;
+            showWinModal();
+        }
+
+        function addStrike() {
+            if (strikes < 3) {
+                strikes++;
+                document.getElementById(`strike${strikes}`).classList.add('active');
+                playWrongSound();
+            }
+        }
+
+        function resetStrikes() {
+            strikes = 0;
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`strike${i}`).classList.remove('active');
+            }
+        }
+
+        function showWinModal() {
+            const modal = document.getElementById('winModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 2000);
+        }
+
+        function closeModal() {
+            document.getElementById('winModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
